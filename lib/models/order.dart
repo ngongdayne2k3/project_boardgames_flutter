@@ -1,5 +1,5 @@
-import 'OrderItem.dart';
-import 'User.dart';
+import 'order_item.dart';
+import 'user.dart';
 
 class Order {
   int? id;

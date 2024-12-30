@@ -1,5 +1,5 @@
-import 'Order.dart';
-import 'Role.dart';
+import 'order.dart';
+import 'role.dart';
 
 class User {
   int? id;

@@ -1,4 +1,4 @@
-import 'Cart.dart';
+import 'cart.dart';
 
 class CartItem {
   int? id;

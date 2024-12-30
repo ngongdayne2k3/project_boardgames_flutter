@@ -1,4 +1,4 @@
-import 'Product.dart';
+import 'product.dart';
 
 class Manufacturer {
   int? id;
