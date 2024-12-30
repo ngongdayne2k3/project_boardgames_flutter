@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_boardgames_flutter/screens/customer_profile_screen.dart';
-import 'package:project_boardgames_flutter/screens/product_screen.dart';
+import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({super.key});
@@ -13,7 +13,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOption = <Widget>[
-    ProductScreen(),
+    ProductListScreen(),
     CustomerProfile(),
   ];
 
