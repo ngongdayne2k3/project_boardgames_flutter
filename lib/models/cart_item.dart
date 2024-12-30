@@ -1,31 +1,29 @@
 import 'cart.dart';
 
 class CartItem {
-  int? id;
-  String? productName;
-  int? quantity;
-  double? price;
-  Cart? cart;
+  final String productName;
+  final String imageUrl;
+  int quantity;
 
-  CartItem({this.id, this.productName, this.quantity, this.price, this.cart});
+  CartItem({
+    required this.productName,
+    required this.imageUrl,
+    required this.quantity,
+  });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
-      id: json['id'],
       productName: json['productName'],
+      imageUrl: json['imageUrl'],
       quantity: json['quantity'],
-      price: json['price'],
-      cart: json['cart'] != null ? Cart.fromJson(json['cart']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'productName': productName,
+      'imageUrl': imageUrl,
       'quantity': quantity,
-      'price': price,
-      'cart': cart?.toJson(),
     };
   }
 }

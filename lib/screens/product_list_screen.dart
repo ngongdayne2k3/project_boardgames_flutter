@@ -1,7 +1,70 @@
 import 'package:flutter/material.dart';
 import 'product_screen.dart';
+import 'package:project_boardgames_flutter/models/cart.dart'; // Import model Cart
 
-class ProductListScreen extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
+  final Cart cart; // Nhận Cart từ MainScreen
+
+  ProductListScreen({required this.cart}); // Constructor nhận Cart
+
+  @override
+  _ProductListScreenState createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  // Danh sách sản phẩm ban đầu
+  final List<Map<String, String>> _products = [
+    {
+      'imageUrl': 'https://picsum.photos/200/200',
+      'title': 'Sản phẩm 1',
+      'description': 'Mô tả sản phẩm 1',
+    },
+    {
+      'imageUrl': 'https://picsum.photos/200/200',
+      'title': 'Sản phẩm 2',
+      'description': 'Mô tả sản phẩm 2',
+    },
+    {
+      'imageUrl': 'https://picsum.photos/200/200',
+      'title': 'Sản phẩm 3',
+      'description': 'Mô tả sản phẩm 3',
+    },
+  ];
+
+  // Danh sách sản phẩm hiển thị (sẽ thay đổi khi tìm kiếm)
+  List<Map<String, String>> _filteredProducts = [];
+
+  // Controller để lấy giá trị từ TextField
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Khởi tạo danh sách hiển thị bằng danh sách ban đầu
+    _filteredProducts = _products;
+    // Lắng nghe sự thay đổi trong TextField
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    // Hủy controller khi widget bị hủy
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Hàm xử lý khi từ khóa tìm kiếm thay đổi
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredProducts = _products.where((product) {
+        final title = product['title']!.toLowerCase();
+        final description = product['description']!.toLowerCase();
+        return title.contains(query) || description.contains(query);
+      }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,39 +77,27 @@ class ProductListScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 labelText: 'Tìm kiếm sản phẩm',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
               ),
-              onChanged: (value) {
-                print('Từ khóa tìm kiếm: $value');
-              },
             ),
           ),
           // Danh sách sản phẩm
           Expanded(
-            child: ListView(
-              children: <Widget>[
-                _buildNewsItem(
+            child: ListView.builder(
+              itemCount: _filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = _filteredProducts[index];
+                return _buildNewsItem(
                   context,
-                  imageUrl: 'https://picsum.photos/200/200',
-                  title: 'Sản phẩm 1',
-                  description: 'Mô tả sản phẩm 1',
-                ),
-                _buildNewsItem(
-                  context,
-                  imageUrl: 'https://picsum.photos/200/200',
-                  title: 'Sản phẩm 2',
-                  description: 'Mô tả sản phẩm 2',
-                ),
-                _buildNewsItem(
-                  context,
-                  imageUrl: 'https://picsum.photos/200/200',
-                  title: 'Sản phẩm 3',
-                  description: 'Mô tả sản phẩm 3',
-                ),
-              ],
+                  imageUrl: product['imageUrl']!,
+                  title: product['title']!,
+                  description: product['description']!,
+                );
+              },
             ),
           ),
         ],
@@ -70,6 +121,7 @@ class ProductListScreen extends StatelessWidget {
               imageUrl: imageUrl,
               productName: title,
               productDescription: description,
+              cart: widget.cart, // Truyền Cart vào ProductScreen
             ),
           ),
         );
