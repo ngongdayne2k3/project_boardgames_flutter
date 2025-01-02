@@ -7,3 +7,7 @@
 - Git pull origin main: tải các thay đổi từ main về dự án
 - Git fetch: Tải về tất cả các thay đổi từ remote mà không tự động hợp nhất (fetch) vào nhánh hiện tại
 - Git branch -r: kiểm tra các nhánh cục bộ hiện tại
+
+
+## Phần code API:
+https://github.com/ngongdayne2k3/boardgamesAPI.git
