@@ -4,8 +4,9 @@ import 'package:project_boardgames_flutter/models/cart.dart'; // Import model Ca
 
 class ProductListScreen extends StatefulWidget {
   final Cart cart; // Nhận Cart từ MainScreen
+  final Function(Map<String, dynamic>) onProductSelected; // Callback khi chọn sản phẩm
 
-  ProductListScreen({required this.cart}); // Constructor nhận Cart
+  ProductListScreen({required this.cart, required this.onProductSelected}); // Constructor nhận Cart và callback
 
   @override
   _ProductListScreenState createState() => _ProductListScreenState();
@@ -13,26 +14,29 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   // Danh sách sản phẩm ban đầu
-  final List<Map<String, String>> _products = [
+  final List<Map<String, dynamic>> _products = [
     {
       'imageUrl': 'https://picsum.photos/200/200',
       'title': 'Sản phẩm 1',
       'description': 'Mô tả sản phẩm 1',
+      'price': 100000, // Thêm giá sản phẩm
     },
     {
       'imageUrl': 'https://picsum.photos/200/200',
       'title': 'Sản phẩm 2',
       'description': 'Mô tả sản phẩm 2',
+      'price': 200000, // Thêm giá sản phẩm
     },
     {
       'imageUrl': 'https://picsum.photos/200/200',
       'title': 'Sản phẩm 3',
       'description': 'Mô tả sản phẩm 3',
+      'price': 300000, // Thêm giá sản phẩm
     },
   ];
 
   // Danh sách sản phẩm hiển thị (sẽ thay đổi khi tìm kiếm)
-  List<Map<String, String>> _filteredProducts = [];
+  List<Map<String, dynamic>> _filteredProducts = [];
 
   // Controller để lấy giá trị từ TextField
   final TextEditingController _searchController = TextEditingController();
@@ -95,7 +99,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   context,
                   imageUrl: product['imageUrl']!,
                   title: product['title']!,
-                  description: product['description']!,
+                  price: product['price']!, // Truyền giá sản phẩm
                 );
               },
             ),
@@ -109,22 +113,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
       BuildContext context, {
         required String imageUrl,
         required String title,
-        required String description,
+        required double price,
       }) {
     return GestureDetector(
       onTap: () {
-        // Điều hướng tới màn hình chi tiết sản phẩm
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductScreen(
-              imageUrl: imageUrl,
-              productName: title,
-              productDescription: description,
-              cart: widget.cart, // Truyền Cart vào ProductScreen
-            ),
-          ),
-        );
+        // Gọi callback để thông báo cho MainScreen
+        widget.onProductSelected({
+          'imageUrl': imageUrl,
+          'title': title,
+          'description': 'Mô tả chi tiết sản phẩm',
+          'price': price,
+        });
       },
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -157,13 +156,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      description,
+                      'Giá: ${price.toString()} VND', // Hiển thị giá
                       style: TextStyle(color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 3,
                     ),
                   ],
                 ),
+              ),
+              // Nút mua hàng
+              IconButton(
+                icon: Icon(Icons.add_shopping_cart),
+                onPressed: () {
+                  widget.cart.addProduct(title, imageUrl, price); // Thêm sản phẩm vào giỏ hàng
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Đã thêm $title vào giỏ hàng!')),
+                  );
+                },
               ),
             ],
           ),

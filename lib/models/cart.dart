@@ -23,17 +23,27 @@ class Cart {
     };
   }
 
-  void addProduct(String productName, String imageUrl) {
-    items ??= []; // Khởi tạo danh sách items nếu nó null
+  void addProduct(String productName, String imageUrl, double price) {
+    items ??= [];
     final existingItemIndex = items!.indexWhere((item) => item.productName == productName);
     if (existingItemIndex != -1) {
       items![existingItemIndex].quantity++;
     } else {
-      items!.add(CartItem(productName: productName, imageUrl: imageUrl, quantity: 1));
+      items!.add(CartItem(productName: productName, imageUrl: imageUrl, price: price, quantity: 1));
     }
   }
 
   void removeProduct(String productName) {
     items?.removeWhere((item) => item.productName == productName);
+  }
+
+  double getTotalPrice() {
+    double total = 0;
+    if (items != null) {
+      for (var item in items!) {
+        total += item.price * item.quantity;
+      }
+    }
+    return total;
   }
 }
