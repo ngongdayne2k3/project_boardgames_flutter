@@ -1,52 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:project_boardgames_flutter/screens/cart_screen.dart';
-import 'package:project_boardgames_flutter/screens/customer_profile_screen.dart';
-import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
-import 'package:project_boardgames_flutter/models/cart.dart'; // Import model Cart
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
+import 'admin_home_screen.dart';
+import 'customer_home_screen.dart';
 
-class MainScreen extends StatefulWidget {
-  MainScreen({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  late final Cart cart; // Sử dụng `late` để khởi tạo sau
-  late final List<Widget> _widgetOptions; // Sử dụng `late` để khởi tạo sau
-
-  @override
-  void initState() {
-    super.initState();
-    cart = Cart(); // Khởi tạo `cart`
-    _widgetOptions = <Widget>[
-      ProductListScreen(cart: cart), // Truyền `cart` vào `ProductListScreen`
-      CartScreen(cart: cart), // Truyền `cart` vào `CartScreen`
-      CustomerProfile(), // Nếu CustomerProfile cần Cart, truyền vào đây
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
+class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ sản phẩm'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Giỏ hàng'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Tài khoản'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.yellow,
-        onTap: _onItemTapped,
-      ),
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    return FutureBuilder(
+      future: authProvider.loadToken(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else {
+          if (authProvider.token != null) {
+            if (authProvider.user?.role == Role.admin) {
+              return AdminHomeScreen();
+            } else {
+              return CustomerHomeScreen();
+            }
+          } else {
+            return LoginScreen();
+          }
+        }
+      },
     );
   }
 }

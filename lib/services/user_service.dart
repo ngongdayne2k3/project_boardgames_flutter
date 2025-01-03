@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:project_boardgames_flutter/models/user.dart';
-import 'package:project_boardgames_flutter/config/app_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
+import '../models/user.dart';
 
 class UserService {
   static const String _baseUrl = AppConfig.baseUrl;
 
   // Đăng nhập
-  static Future<String> login(String username, String password) async {
+  static Future<Map<String, dynamic>> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/users/login'),
       headers: {'Content-Type': 'application/json'},
@@ -15,14 +16,17 @@ class UserService {
     );
 
     if (response.statusCode == 200) {
-      return response.body; // Trả về JWT token
+      return jsonDecode(response.body); // Trả về token và thông tin người dùng
     } else {
       throw Exception('Failed to login');
     }
   }
 
   // Lấy thông tin người dùng
-  static Future<User> getUserProfile(String token) async {
+  static Future<User> getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.get(
       Uri.parse('$_baseUrl/api/users/profile'),
       headers: {'Authorization': 'Bearer $token'},
@@ -51,7 +55,10 @@ class UserService {
   }
 
   // Cập nhật thông tin người dùng
-  static Future<User> updateUser(User user, String token) async {
+  static Future<User> updateUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.put(
       Uri.parse('$_baseUrl/api/users/${user.id}'),
       headers: {

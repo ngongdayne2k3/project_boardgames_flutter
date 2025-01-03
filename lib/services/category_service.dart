@@ -1,14 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/category.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import '../models/category.dart';
 
 class CategoryService {
   static const String _baseUrl = AppConfig.baseUrl;
 
   // Lấy tất cả danh mục
   static Future<List<Category>> getAllCategories() async {
-    final response = await http.get(Uri.parse('$_baseUrl/manager/categories'));
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/categories'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
@@ -20,10 +27,14 @@ class CategoryService {
 
   // Tạo danh mục mới
   static Future<Category> createCategory(Category category) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.post(
-      Uri.parse('$_baseUrl/manager/categories'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+      Uri.parse('$_baseUrl/api/categories'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode(category.toJson()),
     );
@@ -37,10 +48,14 @@ class CategoryService {
 
   // Cập nhật danh mục
   static Future<Category> updateCategory(Category category) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.put(
-      Uri.parse('$_baseUrl/manager/categories/${category.id}'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+      Uri.parse('$_baseUrl/api/categories/${category.id}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode(category.toJson()),
     );
@@ -54,7 +69,13 @@ class CategoryService {
 
   // Xóa danh mục
   static Future<void> deleteCategory(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/manager/categories/$id'));
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/api/categories/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete category');

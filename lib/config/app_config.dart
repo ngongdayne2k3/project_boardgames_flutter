@@ -1,3 +1,3 @@
 class AppConfig {
-  static const String baseUrl = "http://your-springboot-server-url/api";
+  static const String baseUrl = "127.0.0.1/api";
 }

@@ -1,14 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:project_boardgames_flutter/models/product.dart';
-import 'package:project_boardgames_flutter/config/app_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
+import '../models/product.dart';
 
 class ProductService {
   static const String _baseUrl = AppConfig.baseUrl;
 
   // Lấy tất cả sản phẩm
   static Future<List<Product>> getAllProducts() async {
-    final response = await http.get(Uri.parse('$_baseUrl/api/products'));
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/products'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
@@ -19,7 +26,10 @@ class ProductService {
   }
 
   // Thêm sản phẩm
-  static Future<Product> addProduct(Product product, String token) async {
+  static Future<Product> addProduct(Product product) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.post(
       Uri.parse('$_baseUrl/api/products'),
       headers: {
@@ -37,7 +47,10 @@ class ProductService {
   }
 
   // Cập nhật sản phẩm
-  static Future<Product> updateProduct(Product product, String token) async {
+  static Future<Product> updateProduct(Product product) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.put(
       Uri.parse('$_baseUrl/api/products/${product.id}'),
       headers: {
@@ -55,7 +68,10 @@ class ProductService {
   }
 
   // Xóa sản phẩm
-  static Future<void> deleteProduct(int id, String token) async {
+  static Future<void> deleteProduct(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.delete(
       Uri.parse('$_baseUrl/api/products/$id'),
       headers: {'Authorization': 'Bearer $token'},

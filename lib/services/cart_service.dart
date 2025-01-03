@@ -1,15 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
 import '../models/cart.dart';
 import '../models/cart_item.dart';
-import '../config/app_config.dart';
 
 class CartService {
   static const String _baseUrl = AppConfig.baseUrl;
 
   // Lấy giỏ hàng của người dùng
-  static Future<Cart> getCart(String username) async {
-    final response = await http.get(Uri.parse('$_baseUrl/customer/cart?username=$username'));
+  static Future<Cart> getCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/customer/cart'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       return Cart.fromJson(jsonDecode(response.body));
@@ -19,13 +26,17 @@ class CartService {
   }
 
   // Thêm sản phẩm vào giỏ hàng
-  static Future<Cart> addToCart(String username, int productId, int quantity) async {
+  static Future<Cart> addToCart(int productId, int quantity) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.post(
-      Uri.parse('$_baseUrl/customer/add?productId=$productId&quantity=$quantity'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+      Uri.parse('$_baseUrl/api/customer/cart/add'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({'username': username}),
+      body: jsonEncode({'productId': productId, 'quantity': quantity}),
     );
 
     if (response.statusCode == 200) {
@@ -36,9 +47,13 @@ class CartService {
   }
 
   // Xóa sản phẩm khỏi giỏ hàng
-  static Future<void> removeFromCart(String username, int cartItemId) async {
+  static Future<void> removeFromCart(int cartItemId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
     final response = await http.delete(
-      Uri.parse('$_baseUrl/customer/remove/$cartItemId?username=$username'),
+      Uri.parse('$_baseUrl/api/customer/cart/remove/$cartItemId'),
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {

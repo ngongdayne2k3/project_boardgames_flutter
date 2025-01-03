@@ -1,97 +1,61 @@
 import 'package:flutter/material.dart';
 import '../models/cart.dart';
+import '../services/cart_service.dart'; // Sử dụng service trực tiếp
 
 class CartScreen extends StatefulWidget {
-  final Cart cart;
-
-  CartScreen({required this.cart});
-
   @override
   _CartScreenState createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
+  Cart? _cart;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCart();
+  }
+
+  Future<void> _fetchCart() async {
+    setState(() => _isLoading = true);
+    try {
+      _cart = await CartService.getCart();
+    } catch (e) {
+      print('Error fetching cart: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _removeFromCart(int cartItemId) async {
+    setState(() => _isLoading = true);
+    try {
+      await CartService.removeFromCart(cartItemId);
+      _fetchCart(); // Cập nhật lại giỏ hàng
+    } catch (e) {
+      print('Error removing item from cart: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Giỏ hàng'),
-      ),
-      body: ListView.builder(
-        itemCount: widget.cart.items?.length ?? 0,
+      appBar: AppBar(title: Text('Cart')),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+        itemCount: _cart?.items.length ?? 0,
         itemBuilder: (context, index) {
-          final item = widget.cart.items![index];
+          final item = _cart!.items[index];
           return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(item.imageUrl),
-            ),
-            title: Text(item.productName),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Column(
-                  children: [
-                    Text('Số lượng:'),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          // Nút giảm số lượng
-                          Container(
-                            width: 30, // Đặt kích thước chiều rộng
-                            height: 30, // Đặt kích thước chiều cao
-                            alignment: Alignment.center, // Căn giữa biểu tượng
-                            child: IconButton(
-                              icon: Icon(Icons.remove),
-                              iconSize: 24,
-                              padding: EdgeInsets.zero, // Loại bỏ padding mặc định
-                              onPressed: () {
-                                setState(() {
-                                  if (item.quantity > 1) {
-                                    item.quantity--; // Giảm số lượng
-                                  } else {
-                                    widget.cart.removeProduct(item.productName); // Xóa sản phẩm nếu số lượng = 0
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Text('${item.quantity}'),
-                          const SizedBox(width: 2),
-                          // Nút tăng số lượng
-                          Container(
-                            width: 30, // Đặt kích thước chiều rộng
-                            height: 30, // Đặt kích thước chiều cao
-                            alignment: Alignment.center, // Căn giữa biểu tượng
-                            child: IconButton(
-                              icon: Icon(Icons.add),
-                              iconSize: 24,
-                              padding: EdgeInsets.zero, // Loại bỏ padding mặc định
-                              onPressed: () {
-                                setState(() {
-                                  item.quantity++; // Tăng số lượng
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                // Nút "bỏ" (xóa sản phẩm)
-                IconButton(
-                  icon: Icon(Icons.remove_shopping_cart),
-                  onPressed: () {
-                    setState(() {
-                      widget.cart.removeProduct(item.productName); // Xóa sản phẩm
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Đã xóa ${item.productName} khỏi giỏ hàng!')),
-                    );
-                  },
-                ),
-              ],
+            title: Text(item.product.name),
+            subtitle: Text('Quantity: ${item.quantity}'),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _removeFromCart(item.id!),
             ),
           );
         },

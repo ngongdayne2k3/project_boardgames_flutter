@@ -1,62 +1,65 @@
 import 'package:flutter/material.dart';
+import '../services/user_service.dart'; // Sử dụng service trực tiếp
+import '../models/user.dart';
 
-class CustomerProfile extends StatelessWidget {
-  const CustomerProfile({super.key});
+class CustomerProfileScreen extends StatefulWidget {
+  @override
+  _CustomerProfileScreenState createState() => _CustomerProfileScreenState();
+}
+
+class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
+  User? _user;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    setState(() => _isLoading = true);
+    try {
+      _user = await UserService.getUserProfile();
+    } catch (e) {
+      print('Error fetching user profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _logout() async {
+    setState(() => _isLoading = true);
+    try {
+      // Xóa token hoặc thực hiện đăng xuất
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      print('Error logging out: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Hồ sơ người dùng'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Container(
-              width: 300,
-              child: Card(
-                color: Colors.blue,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.yellow,
-                        backgroundImage:
-                            NetworkImage('https://picsum.photos/200/200'),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Text('Tên người dùng',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(children: [
-                        const Icon(Icons.email),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Text('Email: examples@gmail.com'),
-                      ]),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(children: [
-                        const Icon(Icons.phone),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Text('Phone: 0123456789'),
-                      ]),
-                    ],
-                  ),
-                ),
-              )),
+    return Scaffold(
+      appBar: AppBar(title: Text('Profile')),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${_user?.name}', style: TextStyle(fontSize: 18)),
+            Text('Email: ${_user?.email}', style: TextStyle(fontSize: 18)),
+            Text('Phone: ${_user?.phoneNumber}', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _logout,
+              child: _isLoading ? CircularProgressIndicator() : Text('Logout'),
+            ),
+          ],
         ),
       ),
     );

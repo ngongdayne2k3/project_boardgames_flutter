@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import '../services/user_service.dart'; // Sử dụng service trực tiếp
 import '../models/user.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -9,118 +8,91 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _imageUrlController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController imageUrlController = TextEditingController();
+  bool _isLoading = false;
+  User? _user;
 
   @override
   void initState() {
     super.initState();
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.user != null) {
-      _nameController.text = authProvider.user!.name;
-      _emailController.text = authProvider.user!.email;
-      _phoneController.text = authProvider.user!.phoneNumber;
-      _addressController.text = authProvider.user!.address;
-      _imageUrlController.text = authProvider.user!.profileImageUrl ?? ''; // Xử lý trường hợp null
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    setState(() => _isLoading = true);
+    try {
+      _user = await UserService.getUserProfile();
+      if (_user != null) {
+        nameController.text = _user!.name;
+        emailController.text = _user!.email;
+        phoneController.text = _user!.phoneNumber;
+        addressController.text = _user!.address;
+        imageUrlController.text = _user!.profileImageUrl ?? '';
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    setState(() => _isLoading = true);
+    try {
+      User updatedUser = User(
+        id: _user!.id,
+        name: nameController.text,
+        email: emailController.text,
+        phoneNumber: phoneController.text,
+        address: addressController.text,
+        profileImageUrl: imageUrlController.text.isNotEmpty ? imageUrlController.text : null,
+        username: _user!.username,
+        password: _user!.password,
+        role: _user!.role,
+      );
+      await UserService.updateUser(updatedUser);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update profile: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('User Profile'),
-      ),
-      body: Padding(
+      appBar: AppBar(title: Text('User Profile')),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Hiển thị hình ảnh nếu có
-              if (authProvider.user?.profileImageUrl != null)
-                CircleAvatar(
-                  backgroundImage: NetworkImage(authProvider.user!.profileImageUrl!),
-                  radius: 50,
-                ),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
+        child: Column(
+          children: [
+            if (_user?.profileImageUrl != null)
+              CircleAvatar(
+                backgroundImage: NetworkImage(_user!.profileImageUrl!),
+                radius: 50,
               ),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone Number'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _addressController,
-                decoration: InputDecoration(labelText: 'Address'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: InputDecoration(labelText: 'Image URL (optional)'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final updatedUser = User(
-                      id: authProvider.user!.id,
-                      name: _nameController.text,
-                      email: _emailController.text,
-                      phoneNumber: _phoneController.text,
-                      address: _addressController.text,
-                      profileImageUrl: _imageUrlController.text.isNotEmpty
-                          ? _imageUrlController.text
-                          : null, // Xử lý trường hợp null
-                      username: authProvider.user!.username,
-                      password: authProvider.user!.password,
-                      role: authProvider.user!.role,
-                    );
-
-                    await authProvider.updateUserProfile(updatedUser);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Profile updated successfully')),
-                    );
-                  }
-                },
-                child: Text('Update Profile'),
-              ),
-            ],
-          ),
+            TextField(controller: nameController, decoration: InputDecoration(labelText: 'Name')),
+            TextField(controller: emailController, decoration: InputDecoration(labelText: 'Email')),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: 'Phone Number')),
+            TextField(controller: addressController, decoration: InputDecoration(labelText: 'Address')),
+            TextField(controller: imageUrlController, decoration: InputDecoration(labelText: 'Image URL (optional)')),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _updateProfile,
+              child: _isLoading ? CircularProgressIndicator() : Text('Update Profile'),
+            ),
+          ],
         ),
       ),
     );

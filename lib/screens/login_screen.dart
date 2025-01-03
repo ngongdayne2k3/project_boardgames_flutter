@@ -1,71 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'auth_provider.dart';
-import 'admin_home_screen.dart';
-import 'customer_home_screen.dart';
-import 'register_screen.dart';
+import '../services/user_service.dart'; // Sử dụng service trực tiếp
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    setState(() => _isLoading = true);
+    try {
+      String username = usernameController.text;
+      String password = passwordController.text;
+      Map<String, dynamic> response = await UserService.login(username, password);
+      String token = response['token'];
+      // Lưu token vào SharedPreferences hoặc biến toàn cục
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
+      appBar: AppBar(title: Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
+            TextField(controller: usernameController, decoration: InputDecoration(labelText: 'Username')),
+            TextField(controller: passwordController, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
             ElevatedButton(
-              onPressed: () async {
-                String username = usernameController.text;
-                String password = passwordController.text;
-
-                bool success = await authProvider.login(username, password);
-                if (success) {
-                  if (authProvider.user?.role == Role.admin) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => AdminHomeScreen()),
-                    );
-                  } else if (authProvider.user?.role == Role.customer) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => CustomerHomeScreen()),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Invalid credentials')),
-                  );
-                }
-              },
-              child: Text('Login'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterScreen()),
-                );
-              },
-              child: Text('Don\'t have an account? Register here!'),
+              onPressed: _isLoading ? null : _login,
+              child: _isLoading ? CircularProgressIndicator() : Text('Login'),
             ),
           ],
         ),
