@@ -5,7 +5,7 @@ import 'package:project_boardgames_flutter/models/role.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _user;
-  final List<User> _users = []; // Danh sách người dùng (bao gồm cả khách hàng)
+  final List<User> _users = [];
 
   User? get user => _user;
   List<User> get users => _users;
@@ -33,21 +33,6 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOrderStatus(int orderId, String status, {String? reason}) {
-    for (var user in _users) {
-      final order = user.orders?.firstWhere(
-            (o) => o.id == orderId,
-        orElse: () => Order(),
-      );
-      if (order !=null && order.id != null) {
-        order.status = status;
-        order.reason = reason;
-        notifyListeners();
-        break;
-      }
-    }
-  }
-
   bool login(String username, String password) {
     final user = _users.firstWhere(
           (u) => u.username == username && u.password == password,
@@ -61,4 +46,5 @@ class AuthProvider with ChangeNotifier {
     }
     return false;
   }
+}
 }

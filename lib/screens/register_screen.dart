@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
-import 'package:project_boardgames_flutter/models/user.dart';
-import 'package:project_boardgames_flutter/models/role.dart';
+import '../models/user.dart';
+import '../models/role.dart';
 
 class RegisterScreen extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
@@ -52,23 +52,22 @@ class RegisterScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Tạo ID mới bằng cách tìm ID lớn nhất và cộng thêm 1
                 int newId = authProvider.users.isEmpty
                     ? 1
                     : authProvider.users.map((u) => u.id ?? 0).reduce((max, id) => id > max ? id : max) + 1;
 
                 User newUser = User(
-                  id: newId, // Sử dụng ID mới
+                  id: newId,
                   name: nameController.text,
                   username: usernameController.text,
                   password: passwordController.text,
                   email: emailController.text,
                   phoneNumber: phoneNumberController.text,
                   address: addressController.text,
-                  role: Role.customer, // Mặc định là khách hàng
+                  role: Role.customer,
                 );
 
-                authProvider.addUser(newUser); // Thêm người dùng mới
+                authProvider.addUser(newUser);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Registration successful')),
                 );

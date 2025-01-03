@@ -1,13 +1,10 @@
-import 'product.dart';
-
 class Manufacturer {
-  int? id;
-  String? name;
-  String? address;
-  String? phoneNumber;
-  List<Product>? products;
+  final int? id;
+  final String name;
+  final String address;
+  final String phoneNumber;
 
-  Manufacturer({this.id, this.name, this.address, this.phoneNumber, this.products});
+  Manufacturer({this.id, required this.name, required this.address, required this.phoneNumber});
 
   factory Manufacturer.fromJson(Map<String, dynamic> json) {
     return Manufacturer(
@@ -15,7 +12,6 @@ class Manufacturer {
       name: json['name'],
       address: json['address'],
       phoneNumber: json['phoneNumber'],
-      products: (json['products'] as List).map((i) => Product.fromJson(i)).toList(),
     );
   }
 
@@ -25,7 +21,6 @@ class Manufacturer {
       'name': name,
       'address': address,
       'phoneNumber': phoneNumber,
-      'products': products?.map((i) => i.toJson()).toList(),
     };
   }
 }

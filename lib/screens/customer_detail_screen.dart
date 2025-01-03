@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'auth_provider.dart';
+import '../screen/screen3/auth_provider.dart';
 import 'package:project_boardgames_flutter/models/user.dart';
 import 'package:project_boardgames_flutter/models/order.dart';
 

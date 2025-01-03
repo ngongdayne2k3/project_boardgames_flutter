@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_boardgames_flutter/screen/screen3/customer_detail_screen.dart';
+import 'package:project_boardgames_flutter/screens/customer_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 import 'package:project_boardgames_flutter/models/user.dart';

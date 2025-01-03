@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 import 'admin_home_screen.dart';
+import 'customer_home_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -32,15 +33,23 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String username = usernameController.text;
                 String password = passwordController.text;
 
-                if (authProvider.login(username, password)) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AdminHomeScreen()),
-                  );
+                bool success = await authProvider.login(username, password);
+                if (success) {
+                  if (authProvider.user?.role == Role.admin) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => AdminHomeScreen()),
+                    );
+                  } else if (authProvider.user?.role == Role.customer) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => CustomerHomeScreen()),
+                    );
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Invalid credentials')),

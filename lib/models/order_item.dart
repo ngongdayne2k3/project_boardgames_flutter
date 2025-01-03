@@ -1,29 +1,29 @@
-import 'order.dart';
 import 'product.dart';
+import 'order.dart';
 
 class OrderItem {
-  int? id;
-  Product? product;
-  int? quantity;
-  Order? order;
+  final int? id;
+  final Product product;
+  final int quantity;
+  final Order order;
 
-  OrderItem({this.id, this.product, this.quantity, this.order});
+  OrderItem({this.id, required this.product, required this.quantity, required this.order});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'],
-      product: json['product'] != null ? Product.fromJson(json['product']) : null,
+      product: Product.fromJson(json['product']),
       quantity: json['quantity'],
-      order: json['order'] != null ? Order.fromJson(json['order']) : null,
+      order: Order.fromJson(json['order']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'product': product?.toJson(),
+      'product': product.toJson(),
       'quantity': quantity,
-      'order': order?.toJson(),
+      'order': order.toJson(),
     };
   }
 }

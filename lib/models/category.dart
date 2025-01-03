@@ -1,17 +1,13 @@
-import 'product.dart';
-
 class Category {
-  int? id;
-  String? name;
-  List<Product>? products;
+  final int? id;
+  final String name;
 
-  Category({this.id, this.name, this.products});
+  Category({this.id, required this.name});
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
       id: json['id'],
       name: json['name'],
-      products: (json['products'] as List).map((i) => Product.fromJson(i)).toList(),
     );
   }
 
@@ -19,7 +15,6 @@ class Category {
     return {
       'id': id,
       'name': name,
-      'products': products?.map((i) => i.toJson()).toList(),
     };
   }
 }

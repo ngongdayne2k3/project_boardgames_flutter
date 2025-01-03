@@ -1,22 +1,28 @@
-import 'category.dart';
 import 'manufacturer.dart';
+import 'category.dart';
 
 class Product {
-  int? id;
-  String? name;
-  double? price;
-  Manufacturer? manufacturer;
-  Category? category;
+  final int? id;
+  final String name;
+  final double price;
+  final String imageUrl;
+  final String description;
+  final int stockQuantity;
+  final Manufacturer manufacturer;
+  final Category category;
 
-  Product({this.id, this.name, this.price, this.manufacturer, this.category});
+  Product({this.id, required this.name, required this.price, required this.imageUrl, required this.description, required this.stockQuantity, required this.manufacturer, required this.category});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'],
       name: json['name'],
       price: json['price'],
-      manufacturer: json['manufacturer'] != null ? Manufacturer.fromJson(json['manufacturer']) : null,
-      category: json['category'] != null ? Category.fromJson(json['category']) : null,
+      imageUrl: json['imageUrl'],
+      description: json['description'],
+      stockQuantity: json['stockQuantity'],
+      manufacturer: Manufacturer.fromJson(json['manufacturer']),
+      category: Category.fromJson(json['category']),
     );
   }
 
@@ -25,8 +31,11 @@ class Product {
       'id': id,
       'name': name,
       'price': price,
-      'manufacturer': manufacturer?.toJson(),
-      'category': category?.toJson(),
+      'imageUrl': imageUrl,
+      'description': description,
+      'stockQuantity': stockQuantity,
+      'manufacturer': manufacturer.toJson(),
+      'category': category.toJson(),
     };
   }
 }

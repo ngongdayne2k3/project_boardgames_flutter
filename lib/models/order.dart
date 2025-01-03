@@ -1,26 +1,17 @@
-import 'order_item.dart';
 import 'user.dart';
+import 'order_item.dart';
+import 'order_status.dart';
 
 class Order {
-  int? id;
-  String? recipientName;
-  String? deliveryAddress;
-  double? totalPrice;
-  User? customer;
-  List<OrderItem>? items;
-  String? status; // Trạng thái đơn hàng
-  String? reason; // Lý do nếu đơn hàng thất bại
+  final int? id;
+  final String recipientName;
+  final String deliveryAddress;
+  final double totalPrice;
+  final User customer;
+  final List<OrderItem> items;
+  final OrderStatus status;
 
-  Order({
-    this.id,
-    this.recipientName,
-    this.deliveryAddress,
-    this.totalPrice,
-    this.customer,
-    this.items,
-    this.status = 'Đang xử lý', // Mặc định là "Đang xử lý"
-    this.reason,
-  });
+  Order({this.id, required this.recipientName, required this.deliveryAddress, required this.totalPrice, required this.customer, required this.items, required this.status});
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
@@ -28,10 +19,9 @@ class Order {
       recipientName: json['recipientName'],
       deliveryAddress: json['deliveryAddress'],
       totalPrice: json['totalPrice'],
-      customer: json['customer'] != null ? User.fromJson(json['customer']) : null,
-      items: (json['items'] as List).map((i) => OrderItem.fromJson(i)).toList(),
-      status: json['status'],
-      reason: json['reason'],
+      customer: User.fromJson(json['customer']),
+      items: (json['items'] as List).map((item) => OrderItem.fromJson(item)).toList(),
+      status: OrderStatus.values.firstWhere((e) => e.toString() == 'OrderStatus.${json['status']}'),
     );
   }
 
@@ -41,10 +31,9 @@ class Order {
       'recipientName': recipientName,
       'deliveryAddress': deliveryAddress,
       'totalPrice': totalPrice,
-      'customer': customer?.toJson(),
-      'items': items?.map((i) => i.toJson()).toList(),
-      'status': status,
-      'reason': reason,
+      'customer': customer.toJson(),
+      'items': items.map((item) => item.toJson()).toList(),
+      'status': status.toString().split('.').last,
     };
   }
 }

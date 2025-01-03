@@ -1,4 +1,4 @@
 enum Role {
-  customer,
-  manager
+  CUSTOMER,
+  MANAGER,
 }
