@@ -1,39 +1,67 @@
-import 'cart_item.dart';
+import '../dto/cart_dto.dart';
+import '../dto/cart_item_dto.dart';
 
 class Cart {
-  int? id;
-  String? customerName;
-  List<CartItem>? items;
+  List<CartItemDTO> items = [];
 
-  Cart({this.id, this.customerName, this.items});
-
-  factory Cart.fromJson(Map<String, dynamic> json) {
-    return Cart(
-      id: json['id'],
-      customerName: json['customerName'],
-      items: (json['items'] as List).map((i) => CartItem.fromJson(i)).toList(),
+  // Thêm sản phẩm vào giỏ hàng
+  void addItem(String productId, String productName, double price, int quantity) {
+    var existingItem = items.firstWhere(
+          (item) => item.productId == productId,
+      orElse: () => CartItemDTO(
+        productId: productId,
+        productName: productName,
+        price: price,
+        quantity: 0,
+      ),
     );
-  }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'customerName': customerName,
-      'items': items?.map((i) => i.toJson()).toList(),
-    };
-  }
-
-  void addProduct(String productName, String imageUrl) {
-    items ??= []; // Khởi tạo danh sách items nếu nó null
-    final existingItemIndex = items!.indexWhere((item) => item.productName == productName);
-    if (existingItemIndex != -1) {
-      items![existingItemIndex].quantity++;
+    if (existingItem.quantity > 0) {
+      existingItem.quantity += quantity;  // Cập nhật số lượng nếu sản phẩm đã tồn tại
     } else {
-      items!.add(CartItem(productName: productName, imageUrl: imageUrl, quantity: 1));
+      items.add(CartItemDTO(
+        productId: productId,
+        productName: productName,
+        price: price,
+        quantity: quantity,
+      ));
     }
   }
 
-  void removeProduct(String productName) {
-    items?.removeWhere((item) => item.productName == productName);
+  // Xóa sản phẩm khỏi giỏ hàng
+  void removeItem(String productId) {
+    items.removeWhere((item) => item.productId == productId);
+  }
+
+  // Cập nhật số lượng sản phẩm trong giỏ hàng
+  void updateQuantity(String productId, int newQuantity) {
+    final item = items.firstWhere(
+          (item) => item.productId == productId,
+      orElse: () => throw Exception('Product not found in cart'),
+    );
+
+    if (newQuantity > 0) {
+      item.quantity = newQuantity;
+    } else {
+      removeItem(productId);  // Xóa sản phẩm nếu số lượng <= 0
+    }
+  }
+
+  // Tính tổng tiền trong giỏ hàng
+  double getTotalAmount() {
+    return items.fold(0, (sum, item) => sum + (item.price * item.quantity));
+  }
+
+  // Xóa toàn bộ giỏ hàng
+  void clearCart() {
+    items.clear();
+  }
+
+  // Chuyển đổi giỏ hàng thành CartDTO
+  CartDTO toCartDTO() {
+    return CartDTO(
+      items: items,
+      totalAmount: getTotalAmount(),
+    );
   }
 }
