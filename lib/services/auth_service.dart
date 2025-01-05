@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
 import '../models/user.dart';
 import '../models/user_role.dart';
@@ -48,6 +49,11 @@ class AuthService {
     // Lấy người dùng bằng username
     final user = await _dbHelper.getUserByUsername(loginDTO.username);
     if (user != null && user.password == loginDTO.password) {
+      // Lưu trạng thái đăng nhập vào SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true); // Lưu trạng thái đăng nhập
+      await prefs.setString('userId', user.id); // Lưu ID của người dùng
+      await prefs.setString('userRole', user.role == UserRole.admin ? 'admin' : 'customer'); // Lưu vai trò của người dùng
       return user; // Đăng nhập thành công
     }
     return null; // Đăng nhập thất bại
@@ -55,7 +61,10 @@ class AuthService {
 
   // Đăng xuất
   Future<void> logout() async {
-    // Xử lý đăng xuất (nếu cần)
+    // Xóa trạng thái đăng nhập khỏi SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false); // Đặt trạng thái đăng nhập thành false
+    await prefs.remove('userId'); // Xóa ID người dùng
   }
 
   // Kiểm tra xem người dùng có phải là admin không
