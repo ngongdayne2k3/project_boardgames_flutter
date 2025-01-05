@@ -22,7 +22,11 @@ Cart (Cần sửa thêm).
 3. Bảo mật (chưa có)
 4. Quản lý tồn kho(chưa có)
 5. Quản lý thanh toán (chưa có).
-*Admin
+
+
+
+
+6. Admin
 Thêm, xoá, sửa các bảng danh mục, thương hiệu, sản phẩm. (chưa có).
 Quản lý khách hàng. (chưa có)
 Quản lý đơn hàng (chưa có)
