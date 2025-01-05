@@ -22,9 +22,9 @@ class _CartScreenState extends State<CartScreen> {
         itemBuilder: (context, index) {
           final item = widget.cart.items![index];
           return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(item.imageUrl),
-            ),
+            // leading: CircleAvatar(
+            //   backgroundImage: NetworkImage(item.imageUrl),
+            // ),
             title: Text(item.productName),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -45,13 +45,13 @@ class _CartScreenState extends State<CartScreen> {
                               iconSize: 24,
                               padding: EdgeInsets.zero, // Loại bỏ padding mặc định
                               onPressed: () {
-                                setState(() {
-                                  if (item.quantity > 1) {
-                                    item.quantity--; // Giảm số lượng
-                                  } else {
-                                    widget.cart.removeProduct(item.productName); // Xóa sản phẩm nếu số lượng = 0
-                                  }
-                                });
+                                // setState(() {
+                                //   if (item.quantity > 1) {
+                                //     item.quantity--; // Giảm số lượng
+                                //   } else {
+                                //     widget.cart.removeProduct(item.productName); // Xóa sản phẩm nếu số lượng = 0
+                                //   }
+                                // });
                               },
                             ),
                           ),
@@ -79,18 +79,18 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ],
                 ),
-                // Nút "bỏ" (xóa sản phẩm)
-                IconButton(
-                  icon: Icon(Icons.remove_shopping_cart),
-                  onPressed: () {
-                    setState(() {
-                      widget.cart.removeProduct(item.productName); // Xóa sản phẩm
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Đã xóa ${item.productName} khỏi giỏ hàng!')),
-                    );
-                  },
-                ),
+                // // Nút "bỏ" (xóa sản phẩm)
+                // IconButton(
+                //   icon: Icon(Icons.remove_shopping_cart),
+                //   onPressed: () {
+                //     setState(() {
+                //       widget.cart.removeProduct(item.productName); // Xóa sản phẩm
+                //     });
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       SnackBar(content: Text('Đã xóa ${item.productName} khỏi giỏ hàng!')),
+                //     );
+                //   },
+                // ),
               ],
             ),
           );
