@@ -7,6 +7,8 @@ import 'package:project_boardgames_flutter/screens/product_screen.dart';
 import 'package:project_boardgames_flutter/screens/cart_screen.dart';
 import 'package:project_boardgames_flutter/screens/customer_profile_screen.dart';
 
+import 'models/cart.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

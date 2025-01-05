@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../dto/login_dto.dart';  // Import LoginDTO
-import 'home_screen.dart';
+import 'main_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final _usernameController = TextEditingController();
@@ -40,7 +40,7 @@ class LoginScreen extends StatelessWidget {
                 if (user != null) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => MainScreen()),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

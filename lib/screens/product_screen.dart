@@ -64,25 +64,25 @@ class ProductScreen extends StatelessWidget {
                           style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                         ),
                         SizedBox(height: 20),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              cart.addProduct(productName, imageUrl);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Đã thêm $productName vào giỏ hàng!')),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                              backgroundColor: Colors.purple,
-                            ),
-                            child: Text(
-                              'Mua hàng',
-                              style: TextStyle(fontSize: 18, color: Colors.white),
-                            ),
-                          ),
-                        ),
+                        // Align(
+                        //   alignment: Alignment.centerRight,
+                        //   child: ElevatedButton(
+                        //     onPressed: () {
+                        //       cart.addProduct(productName, imageUrl);
+                        //       ScaffoldMessenger.of(context).showSnackBar(
+                        //         SnackBar(content: Text('Đã thêm $productName vào giỏ hàng!')),
+                        //       );
+                        //     },
+                        //     style: ElevatedButton.styleFrom(
+                        //       padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        //       backgroundColor: Colors.purple,
+                        //     ),
+                        //     child: Text(
+                        //       'Mua hàng',
+                        //       style: TextStyle(fontSize: 18, color: Colors.white),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
