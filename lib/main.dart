@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_boardgames_flutter/screens/admin/manage_products_screen.dart';
 import 'package:project_boardgames_flutter/screens/main_screen.dart';
 import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/auth/signup_screen.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         ),
         '/cart': (context) => CartScreen(cart: Cart()),  // Truyền Cart vào CartScreen
         '/profile': (context) => CustomerProfile(),
+        '/manage-products': (context) => ManageProductsScreen(),
       },
       initialRoute: '/',  // Route khởi đầu
     );

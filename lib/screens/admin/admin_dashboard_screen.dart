@@ -18,7 +18,7 @@ class AdminDashboardScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Điều hướng đến màn hình quản lý sản phẩm
+                Navigator.pushNamed(context, '/manage-products');
               },
               child: Text('Manage Products'),
             ),
