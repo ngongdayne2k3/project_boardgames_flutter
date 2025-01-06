@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/user_role.dart';
-import '../services/auth_service.dart';
+import '../../models/user_role.dart';
+import '../../services/auth_service.dart';
 import 'login_screen.dart';  // Import LoginScreen
 
 class SignupScreen extends StatelessWidget {

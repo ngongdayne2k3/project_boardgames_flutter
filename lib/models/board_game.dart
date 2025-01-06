@@ -40,4 +40,28 @@ class BoardGame {
   void increaseStock(int quantity) {
     stock += quantity;
   }
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'categoryId': category.id,
+      'brandId': brand.id,
+      'price': price,
+      'stock': stock,
+      'description': description,
+      'imageUrl': imageUrl,
+    };
+  }
+  factory BoardGame.fromMap(Map<String, dynamic> map) {
+    return BoardGame(
+      id: map['id'],
+      name: map['name'],
+      category: Category(id: map['categoryId'], name: ''), // Giả sử category name không được lưu trong bảng boardgames
+      brand: Brand(id: map['brandId'], name: ''), // Giả sử brand name không được lưu trong bảng boardgames
+      price: map['price'],
+      stock: map['stock'],
+      description: map['description'],
+      imageUrl: map['imageUrl'],
+    );
+  }
 }

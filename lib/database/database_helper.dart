@@ -1,31 +1,42 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import '../dto/order_info_dto.dart';
 import '../models/user.dart';
 import '../models/order.dart';
 import '../models/order_item.dart';
+import '../models/board_game.dart';
+import '../models/category.dart';
+import '../models/brand.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
   static Database? _database;
-
-  // Tạo singleton
-  factory DatabaseHelper() {
-    return _instance;
-  }
 
   DatabaseHelper._internal();
 
-  // Khởi tạo cơ sở dữ liệu
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  // Khởi tạo và mở cơ sở dữ liệu
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'boardgames.db');
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'boardgames.db');
+
+    // Kiểm tra xem database đã tồn tại chưa
+    if (!await File(path).exists()) {
+      // Copy database từ assets vào thư mục ứng dụng
+      ByteData data = await rootBundle.load('assets/boardgames.db');
+      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      await File(path).writeAsBytes(bytes, flush: true);
+    }
+
     return await openDatabase(
       path,
       version: 1,
@@ -33,7 +44,6 @@ class DatabaseHelper {
     );
   }
 
-  // Tạo bảng khi cơ sở dữ liệu được tạo lần đầu
   Future<void> _onCreate(Database db, int version) async {
     // Tạo bảng users
     await db.execute('''
@@ -104,7 +114,6 @@ class DatabaseHelper {
     ''');
   }
 
-  // Đóng cơ sở dữ liệu
   Future<void> close() async {
     if (_database != null) {
       await _database!.close();
@@ -128,20 +137,15 @@ class DatabaseHelper {
   // Lấy người dùng bằng id
   Future<User?> getUserById(String id) async {
     final db = await database;
-
-    // Thực hiện truy vấn SQL để lấy người dùng dựa trên id
     final List<Map<String, dynamic>> maps = await db.query(
-      'users',  // Tên bảng
-      where: 'id = ?',  // Điều kiện WHERE
-      whereArgs: [id],  // Giá trị của điều kiện
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
     );
 
-    // Nếu có kết quả, chuyển đổi thành đối tượng User
     if (maps.isNotEmpty) {
       return User.fromMap(maps.first);
     }
-
-    // Trả về null nếu không tìm thấy người dùng
     return null;
   }
 
@@ -277,5 +281,82 @@ class DatabaseHelper {
     }
 
     return orders;
+  }
+
+// Thêm boardgame mới
+Future<void> insertBoardGame(BoardGame boardGame) async {
+  final db = await database;
+  await db.insert(
+    'boardgames',
+    boardGame.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+
+// Lấy tất cả boardgames
+Future<List<BoardGame>> getAllBoardGames() async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query('boardgames');
+
+  return List.generate(maps.length, (i) {
+    return BoardGame.fromMap(maps[i]);
+  });
+}
+  Future<void> updateBoardGame(BoardGame boardGame) async {
+    final db = await database;
+    await db.update(
+      'boardgames',
+      boardGame.toMap(),
+      where: 'id = ?',
+      whereArgs: [boardGame.id],
+    );
+  }
+
+//Thêm category mới
+  Future<void> insertCategory(Category category) async {
+    final db = await database;
+    await db.insert(
+      'categories',
+      category.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+//
+// //Lấy tất cả categories
+Future<List<Category>> getAllCategories() async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query('categories');
+
+  return List.generate(maps.length, (i) {
+    return Category.fromMap(maps[i]);
+  });
+}
+//
+// //Thêm brand mới
+Future<void> insertBrand(Brand brand) async {
+  final db = await database;
+  await db.insert(
+    'brands',
+    brand.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+//
+//Lấy tất cả brands
+Future<List<Brand>> getAllBrands() async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query('brands');
+
+  return List.generate(maps.length, (i) {
+    return Brand.fromMap(maps[i]);
+  });
+}
+  Future<void> deleteBoardGame(String id) async {
+    final db = await database;
+    await db.delete(
+      'boardgames',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

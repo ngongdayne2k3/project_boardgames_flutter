@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:project_boardgames_flutter/screens/login_screen.dart';
+import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
 import 'package:project_boardgames_flutter/screens/cart_screen.dart';
-// import 'package:project_boardgames_flutter/screens/customer_orders_screen.dart';
-// import 'package:project_boardgames_flutter/screens/edit_customer_screen.dart';
+
 import 'package:project_boardgames_flutter/models/cart.dart';
+
+import 'admin/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   bool _isLoggedIn = false;
+  String? _userRole; // Lưu vai trò của người dùng
   final Cart _cart = Cart(); // Giỏ hàng
 
   @override
@@ -26,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false; // Lấy trạng thái đăng nhập
+    final userRole = prefs.getString('userRole'); // Lấy vai trò của người dùng
 
     if (!isLoggedIn) {
       // Nếu chưa đăng nhập, chuyển hướng đến LoginScreen
@@ -34,9 +37,10 @@ class _MainScreenState extends State<MainScreen> {
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     } else {
-      // Nếu đã đăng nhập, cập nhật trạng thái
+      // Nếu đã đăng nhập, cập nhật trạng thái và vai trò
       setState(() {
         _isLoggedIn = true;
+        _userRole = userRole;
       });
     }
   }
@@ -66,6 +70,22 @@ class _MainScreenState extends State<MainScreen> {
         centerTitle: true,
         backgroundColor: Colors.deepPurple, // Màu nền AppBar
         elevation: 10.0, // Đổ bóng AppBar
+        actions: [
+          // Nút đăng xuất
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', false); // Đặt trạng thái đăng nhập thành false
+              await prefs.remove('userId'); // Xóa ID người dùng
+              await prefs.remove('userRole'); // Xóa vai trò người dùng
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -110,32 +130,31 @@ class _MainScreenState extends State<MainScreen> {
                 );
               },
             ),
-            // // Nút "Đơn hàng của khách hàng"
-            // _buildMenuButton(
-            //   context,
-            //   icon: Icons.list_alt,
-            //   label: 'Đơn hàng',
-            //   color: Colors.orange,
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => CustomerOrdersScreen()),
-            //     );
-            //   },
-            // ),
-            // // Nút "Chỉnh sửa khách hàng"
-            // _buildMenuButton(
-            //   context,
-            //   icon: Icons.edit,
-            //   label: 'Chỉnh sửa',
-            //   color: Colors.red,
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => EditCustomerScreen()),
-            //     );
-            //   },
-            // ),
+            // Nút "Quản lý sản phẩm" (chỉ hiển thị cho admin)
+            if (_userRole == 'admin')
+              _buildMenuButton(
+                context,
+                icon: Icons.manage_search,
+                label: 'Quản lý sản phẩm',
+                color: Colors.orange,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AdminDashboardScreen()),
+                  );
+                },
+              ),
+            // Nút "Quản lý đơn hàng" (chỉ hiển thị cho admin)
+            if (_userRole == 'admin')
+              _buildMenuButton(
+                context,
+                icon: Icons.list_alt,
+                label: 'Quản lý đơn hàng',
+                color: Colors.red,
+                onPressed: () {
+                  // Điều hướng đến màn hình quản lý đơn hàng
+                },
+              ),
           ],
         ),
       ),
