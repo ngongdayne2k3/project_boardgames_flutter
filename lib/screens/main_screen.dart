@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:project_boardgames_flutter/screens/admin/manage_order/manage_orders_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
 import 'package:project_boardgames_flutter/screens/cart_screen.dart';
 import 'package:project_boardgames_flutter/models/cart.dart';
-import 'admin/admin_dashboard_screen.dart';
+import 'package:project_boardgames_flutter/screens/admin/manage_products_screen.dart'; // Thêm import này
+import 'package:project_boardgames_flutter/screens/admin/manage_order/manage_orders_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,29 +14,26 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   bool _isLoggedIn = false;
-  String? _userRole; // Lưu vai trò của người dùng
-  final Cart _cart = Cart(); // Giỏ hàng
+  String? _userRole;
+  final Cart _cart = Cart();
 
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi khởi tạo
+    _checkLoginStatus();
   }
 
-  // Hàm kiểm tra trạng thái đăng nhập
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false; // Lấy trạng thái đăng nhập
-    final userRole = prefs.getString('userRole'); // Lấy vai trò của người dùng
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final userRole = prefs.getString('userRole');
 
     if (!isLoggedIn) {
-      // Nếu chưa đăng nhập, chuyển hướng đến LoginScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     } else {
-      // Nếu đã đăng nhập, cập nhật trạng thái và vai trò
       setState(() {
         _isLoggedIn = true;
         _userRole = userRole;
@@ -47,15 +44,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_isLoggedIn) {
-      // Hiển thị màn hình loading nếu chưa đăng nhập
       return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(), // Hiển thị loading
+          child: CircularProgressIndicator(),
         ),
       );
     }
 
-    // Nếu đã đăng nhập, hiển thị giao diện chính
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -67,17 +62,16 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple, // Màu nền AppBar
-        elevation: 10.0, // Đổ bóng AppBar
+        backgroundColor: Colors.deepPurple,
+        elevation: 10.0,
         actions: [
-          // Nút đăng xuất
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isLoggedIn', false); // Đặt trạng thái đăng nhập thành false
-              await prefs.remove('userId'); // Xóa ID người dùng
-              await prefs.remove('userRole'); // Xóa vai trò người dùng
+              await prefs.setBool('isLoggedIn', false);
+              await prefs.remove('userId');
+              await prefs.remove('userRole');
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -98,12 +92,11 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
         child: GridView.count(
-          crossAxisCount: 2, // Số cột trong lưới
-          padding: EdgeInsets.all(20.0), // Khoảng cách xung quanh lưới
-          crossAxisSpacing: 15.0, // Khoảng cách giữa các cột
-          mainAxisSpacing: 15.0, // Khoảng cách giữa các hàng
+          crossAxisCount: 2,
+          padding: EdgeInsets.all(20.0),
+          crossAxisSpacing: 15.0,
+          mainAxisSpacing: 15.0,
           children: [
-            // Nút "Sản phẩm"
             _buildMenuButton(
               context,
               icon: Icons.shopping_bag,
@@ -116,7 +109,6 @@ class _MainScreenState extends State<MainScreen> {
                     builder: (context) => ProductListScreen(
                       cart: _cart,
                       onProductSelected: (productDetails) {
-                        // Xử lý khi sản phẩm được chọn
                         print('Sản phẩm được chọn: $productDetails');
                       },
                     ),
@@ -124,7 +116,6 @@ class _MainScreenState extends State<MainScreen> {
                 );
               },
             ),
-            // Nút "Giỏ hàng"
             _buildMenuButton(
               context,
               icon: Icons.shopping_cart,
@@ -137,7 +128,6 @@ class _MainScreenState extends State<MainScreen> {
                 );
               },
             ),
-            // Nút "Quản lý sản phẩm" (chỉ hiển thị cho admin)
             if (_userRole == 'admin')
               _buildMenuButton(
                 context,
@@ -147,11 +137,10 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ManageOrdersScreen()),
+                    MaterialPageRoute(builder: (context) => ManageProductsScreen()),
                   );
                 },
               ),
-            // Nút "Quản lý đơn hàng" (chỉ hiển thị cho admin)
             if (_userRole == 'admin')
               _buildMenuButton(
                 context,
@@ -171,17 +160,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Hàm tạo nút menu
   Widget _buildMenuButton(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onPressed}) {
     return Card(
-      elevation: 5.0, // Đổ bóng cho Card
+      elevation: 5.0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0), // Bo góc Card
+        borderRadius: BorderRadius.circular(15.0),
       ),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(15.0), // Bo góc InkWell
-        splashColor: color.withOpacity(0.3), // Màu hiệu ứng khi nhấn
+        borderRadius: BorderRadius.circular(15.0),
+        splashColor: color.withOpacity(0.3),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15.0),
@@ -201,7 +189,7 @@ class _MainScreenState extends State<MainScreen> {
                 Icon(
                   icon,
                   size: 50.0,
-                  color: Colors.white, // Màu biểu tượng
+                  color: Colors.white,
                 ),
                 SizedBox(height: 10.0),
                 Text(
@@ -209,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
                   style: TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // Màu chữ
+                    color: Colors.white,
                   ),
                 ),
               ],
