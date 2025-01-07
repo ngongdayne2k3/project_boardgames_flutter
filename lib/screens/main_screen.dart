@@ -5,14 +5,13 @@ import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
 import 'package:project_boardgames_flutter/screens/cart_screen.dart';
 import 'package:project_boardgames_flutter/models/cart.dart';
-import 'admin/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isLoggedIn = false;
   String? _userRole; // Lưu vai trò của người dùng
   final Cart _cart = Cart(); // Giỏ hàng
@@ -20,7 +19,22 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // Đăng ký theo dõi vòng đời
     _checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi khởi tạo
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Hủy đăng ký khi widget bị hủy
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Khi ứng dụng trở lại trạng thái hoạt động, kiểm tra lại trạng thái đăng nhập
+      _checkLoginStatus();
+    }
   }
 
   // Hàm kiểm tra trạng thái đăng nhập
@@ -42,6 +56,48 @@ class _MainScreenState extends State<MainScreen> {
         _userRole = userRole;
       });
     }
+  }
+
+  // Hàm hiển thị hộp thoại xác nhận đăng xuất
+  Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Người dùng phải nhấn một nút để đóng hộp thoại
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Xác nhận đăng xuất'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Bạn có chắc chắn muốn đăng xuất không?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Hủy'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại
+              },
+            ),
+            TextButton(
+              child: Text('Đăng xuất'),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('isLoggedIn', false);
+                await prefs.remove('userId');
+                await prefs.remove('userRole');
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                      (route) => false, // Xóa toàn bộ ngăn xếp điều hướng
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -73,15 +129,8 @@ class _MainScreenState extends State<MainScreen> {
           // Nút đăng xuất
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isLoggedIn', false); // Đặt trạng thái đăng nhập thành false
-              await prefs.remove('userId'); // Xóa ID người dùng
-              await prefs.remove('userRole'); // Xóa vai trò người dùng
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-              );
+            onPressed: () {
+              _showLogoutConfirmationDialog(context);
             },
           ),
         ],
