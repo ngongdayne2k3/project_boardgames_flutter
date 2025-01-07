@@ -1,31 +1,25 @@
+import 'board_game.dart';
+
 class CartItem {
-  final String productName;
-  final String imageUrl;
-  final double price; // Thêm trường giá sản phẩm
+  BoardGame product;
   int quantity;
 
   CartItem({
-    required this.productName,
-    required this.imageUrl,
-    required this.price, // Thêm giá sản phẩm
+    required this.product,
     required this.quantity,
   });
 
-  factory CartItem.fromJson(Map<String, dynamic> json) {
-    return CartItem(
-      productName: json['productName'],
-      imageUrl: json['imageUrl'],
-      price: json['price'], // Đọc giá từ JSON
-      quantity: json['quantity'],
-    );
+  // Tính tổng giá của mục này
+  double getTotalPrice() {
+    return product.price * quantity;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'productName': productName,
-      'imageUrl': imageUrl,
-      'price': price, // Ghi giá vào JSON
-      'quantity': quantity,
-    };
+  // Cập nhật số lượng
+  void updateQuantity(int newQuantity) {
+    if (newQuantity > 0) {
+      quantity = newQuantity;
+    } else {
+      throw Exception('Quantity must be greater than 0');
+    }
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:project_boardgames_flutter/dbhelper//db_helper.dart'; // Import DatabaseHelper
+import '../database/database_helper.dart'; // Import DatabaseHelper
 import 'package:project_boardgames_flutter/models/cart.dart'; // Import model Cart
-import 'package:project_boardgames_flutter/models/product.dart'; // Import model Product
+import '../models/board_game.dart'; // Import model Product
+import '../models/cart_item.dart'; // Import model CartItem
 
 class ProductListScreen extends StatefulWidget {
   final Cart cart; // Nhận Cart từ MainScreen
@@ -14,8 +15,8 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  List<Product> _products = []; // Danh sách sản phẩm từ cơ sở dữ liệu
-  List<Product> _filteredProducts = []; // Danh sách sản phẩm hiển thị
+  List<BoardGame> _products = []; // Danh sách sản phẩm từ cơ sở dữ liệu
+  List<BoardGame> _filteredProducts = []; // Danh sách sản phẩm hiển thị
   final TextEditingController _searchController = TextEditingController();
   final DatabaseHelper _dbHelper = DatabaseHelper(); // Khởi tạo DatabaseHelper
 
@@ -28,7 +29,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   // Hàm tải danh sách sản phẩm từ cơ sở dữ liệu
   Future<void> _loadProducts() async {
-    List<Product> products = await _dbHelper.getProducts();
+    List<BoardGame> products = await _dbHelper.getAllBoardGames();
     setState(() {
       _products = products;
       _filteredProducts = products;
@@ -41,7 +42,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     setState(() {
       _filteredProducts = _products.where((product) {
         final title = product.name?.toLowerCase() ?? '';
-        final manufacturerName = product.manufacturer?.name?.toLowerCase() ?? '';
+        final manufacturerName = product.brand?.name?.toLowerCase() ?? '';
         final categoryName = product.category?.name?.toLowerCase() ?? '';
         return title.contains(query) || manufacturerName.contains(query) || categoryName.contains(query);
       }).toList();
@@ -92,14 +93,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Widget _buildProductItem(
       BuildContext context, {
-        required Product product,
+        required BoardGame product,
       }) {
     return GestureDetector(
       onTap: () {
         widget.onProductSelected({
           'title': product.name ?? 'Không có tên',
           'price': product.price ?? 0,
-          'manufacturer': product.manufacturer?.name ?? 'Không có nhà sản xuất',
+          'manufacturer': product.brand?.name ?? 'Không có nhà sản xuất',
           'category': product.category?.name ?? 'Không có danh mục',
         });
       },
@@ -124,7 +125,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
               SizedBox(height: 8),
               Text(
-                'Nhà sản xuất: ${product.manufacturer?.name ?? 'Không có nhà sản xuất'}',
+                'Nhà sản xuất: ${product.brand?.name ?? 'Không có nhà sản xuất'}',
                 style: TextStyle(color: Colors.grey),
               ),
               SizedBox(height: 8),
@@ -136,7 +137,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
               IconButton(
                 icon: Icon(Icons.add_shopping_cart),
                 onPressed: () {
-                  widget.cart.addProduct(product.name ?? 'Không có tên', '', product.price ?? 0);
+                  // Tạo một CartItem mới
+                  CartItem newItem = CartItem(
+                    product: product,
+                    quantity: 1, // Số lượng mặc định là 1
+                  );
+
+                  // Thêm sản phẩm vào giỏ hàng bằng cách sử dụng phương thức addItem của Cart
+                  widget.cart.addItem(
+                    newItem.product.id ?? '', // productId
+                    newItem.product.name ?? 'Không có tên', // productName
+                    newItem.product.price ?? 0, // price
+                    newItem.quantity, // quantity
+                  );
+
+                  // Hiển thị thông báo
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Đã thêm ${product.name ?? "sản phẩm"} vào giỏ hàng!')),
                   );

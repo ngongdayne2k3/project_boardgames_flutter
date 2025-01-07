@@ -1,35 +1,47 @@
+import 'cart_item.dart';
 import 'order_item.dart';
 import 'user.dart';
 
 class Order {
-  int? id;
-  String? recipientName;
-  String? deliveryAddress;
-  double? totalPrice;
-  User? customer;
-  List<OrderItem>? items;
+  String id;
+  User customer;
+  List<OrderItem> items;
+  double totalAmount;
+  String status; // 'successful', 'processing', 'cancelled'
+  String paymentMethod; // 'COD'
 
-  Order({this.id, this.recipientName, this.deliveryAddress, this.totalPrice, this.customer, this.items});
+  Order({
+    required this.id,
+    required this.customer,
+    required this.items,
+    required this.totalAmount,
+    required this.status,
+    required this.paymentMethod,
+  });
 
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: json['id'],
-      recipientName: json['recipientName'],
-      deliveryAddress: json['deliveryAddress'],
-      totalPrice: json['totalPrice'],
-      customer: json['customer'] != null ? User.fromJson(json['customer']) : null,
-      items: (json['items'] as List).map((i) => OrderItem.fromJson(i)).toList(),
-    );
+  // Tính tổng tiền của đơn hàng
+  double calculateTotalAmount() {
+    return items.fold(0, (sum, item) => sum + item.getTotalPrice());
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'recipientName': recipientName,
-      'deliveryAddress': deliveryAddress,
-      'totalPrice': totalPrice,
-      'customer': customer?.toJson(),
-      'items': items?.map((i) => i.toJson()).toList(),
-    };
+  // Cập nhật trạng thái đơn hàng
+  void updateStatus(String newStatus) {
+    if (['successful', 'processing', 'cancelled'].contains(newStatus)) {
+      status = newStatus;
+    } else {
+      throw Exception('Invalid status');
+    }
+  }
+
+  // Chuyển đổi CartItem thành OrderItem
+  static List<OrderItem> convertCartItemsToOrderItems(List<CartItem> cartItems) {
+    return cartItems.map((cartItem) {
+      return OrderItem(
+        productId: cartItem.product.id,
+        productName: cartItem.product.name,
+        price: cartItem.product.price,
+        quantity: cartItem.quantity,
+      );
+    }).toList();
   }
 }

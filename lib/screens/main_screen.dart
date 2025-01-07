@@ -1,109 +1,218 @@
 import 'package:flutter/material.dart';
-import 'package:project_boardgames_flutter/screens/cart_screen.dart';
-import 'package:project_boardgames_flutter/screens/customer_profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
-import 'package:project_boardgames_flutter/screens/product_screen.dart';
+import 'package:project_boardgames_flutter/screens/cart_screen.dart';
 import 'package:project_boardgames_flutter/models/cart.dart';
+import 'admin/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  MainScreen({super.key});
-
   @override
-  State<StatefulWidget> createState() => _MainScreenState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  late final Cart cart; // Sử dụng `late` để khởi tạo sau
-  late final List<Widget> _widgetOptions; // Sử dụng `late` để khởi tạo sau
-  Widget? _currentProductScreen; // Màn hình chi tiết sản phẩm hiện tại
+  bool _isLoggedIn = false;
+  String? _userRole; // Lưu vai trò của người dùng
+  final Cart _cart = Cart(); // Giỏ hàng
 
   @override
   void initState() {
     super.initState();
-    cart = Cart(); // Khởi tạo `cart`
-    _widgetOptions = <Widget>[
-      ProductListScreen(
-        cart: cart,
-        onProductSelected: _onProductSelected, // Truyền callback để xử lý chọn sản phẩm
-      ), // Truyền `cart` vào `ProductListScreen`
-      CartScreen(cart: cart), // Truyền `cart` vào `CartScreen`
-      CustomerProfile(), // Nếu CustomerProfile cần Cart, truyền vào đây
-    ];
+    _checkLoginStatus(); // Kiểm tra trạng thái đăng nhập khi khởi tạo
   }
 
-  // Hàm xử lý khi người dùng chọn một sản phẩm
-  void _onProductSelected(Map<String, dynamic> product) {
-    setState(() {
-      _currentProductScreen = ProductScreen(
-        imageUrl: product['imageUrl'],
-        productName: product['title'],
-        productDescription: product['description'],
-        price: product['price'],
-        cart: cart,
-        onContinueShopping: () {
-          setState(() {
-            _currentProductScreen = null; // Đóng màn hình chi tiết sản phẩm
-          });
-        },
-        onCheckout: () {
-          setState(() {
-            _selectedIndex = 1; // Chuyển đến tab giỏ hàng
-            _currentProductScreen = null; // Đóng màn hình chi tiết sản phẩm
-          });
-        },
-        onBack: () {
-          setState(() {
-            _currentProductScreen = null; // Đóng màn hình chi tiết sản phẩm
-          });
-        },
+  // Hàm kiểm tra trạng thái đăng nhập
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false; // Lấy trạng thái đăng nhập
+    final userRole = prefs.getString('userRole'); // Lấy vai trò của người dùng
+
+    if (!isLoggedIn) {
+      // Nếu chưa đăng nhập, chuyển hướng đến LoginScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       );
-    });
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      _currentProductScreen = null; // Đóng màn hình chi tiết sản phẩm khi chuyển tab
-    });
+    } else {
+      // Nếu đã đăng nhập, cập nhật trạng thái và vai trò
+      setState(() {
+        _isLoggedIn = true;
+        _userRole = userRole;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoggedIn) {
+      // Hiển thị màn hình loading nếu chưa đăng nhập
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(), // Hiển thị loading
+        ),
+      );
+    }
+
+    // Nếu đã đăng nhập, hiển thị giao diện chính
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _widgetOptions,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ sản phẩm'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Giỏ hàng'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Tài khoản'),
+      appBar: AppBar(
+        title: Text(
+          'Trang chính',
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple, // Màu nền AppBar
+        elevation: 10.0, // Đổ bóng AppBar
+        actions: [
+          // Nút đăng xuất
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', false); // Đặt trạng thái đăng nhập thành false
+              await prefs.remove('userId'); // Xóa ID người dùng
+              await prefs.remove('userRole'); // Xóa vai trò người dùng
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.yellow,
-        onTap: _onItemTapped,
       ),
-      // Hiển thị màn hình chi tiết sản phẩm nếu có
-      floatingActionButton: _currentProductScreen != null
-          ? FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _currentProductScreen = null; // Đóng màn hình chi tiết sản phẩm
-          });
-        },
-        child: Icon(Icons.close),
-      )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-      // Hiển thị màn hình chi tiết sản phẩm
-      bottomSheet: _currentProductScreen != null
-          ? Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: _currentProductScreen,
-      )
-          : null,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.deepPurple.shade100,
+              Colors.deepPurple.shade50,
+            ],
+          ),
+        ),
+        child: GridView.count(
+          crossAxisCount: 2, // Số cột trong lưới
+          padding: EdgeInsets.all(20.0), // Khoảng cách xung quanh lưới
+          crossAxisSpacing: 15.0, // Khoảng cách giữa các cột
+          mainAxisSpacing: 15.0, // Khoảng cách giữa các hàng
+          children: [
+            // Nút "Sản phẩm"
+            _buildMenuButton(
+              context,
+              icon: Icons.shopping_bag,
+              label: 'Sản phẩm',
+              color: Colors.blue,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductListScreen(
+                      cart: _cart,
+                      onProductSelected: (productDetails) {
+                        // Xử lý khi sản phẩm được chọn
+                        print('Sản phẩm được chọn: $productDetails');
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+            // Nút "Giỏ hàng"
+            _buildMenuButton(
+              context,
+              icon: Icons.shopping_cart,
+              label: 'Giỏ hàng',
+              color: Colors.green,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CartScreen(cart: _cart)),
+                );
+              },
+            ),
+            // Nút "Quản lý sản phẩm" (chỉ hiển thị cho admin)
+            if (_userRole == 'admin')
+              _buildMenuButton(
+                context,
+                icon: Icons.manage_search,
+                label: 'Quản lý sản phẩm',
+                color: Colors.orange,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AdminDashboardScreen()),
+                  );
+                },
+              ),
+            // Nút "Quản lý đơn hàng" (chỉ hiển thị cho admin)
+            if (_userRole == 'admin')
+              _buildMenuButton(
+                context,
+                icon: Icons.list_alt,
+                label: 'Quản lý đơn hàng',
+                color: Colors.red,
+                onPressed: () {
+                  // Điều hướng đến màn hình quản lý đơn hàng
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Hàm tạo nút menu
+  Widget _buildMenuButton(BuildContext context, {required IconData icon, required String label, required Color color, required VoidCallback onPressed}) {
+    return Card(
+      elevation: 5.0, // Đổ bóng cho Card
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0), // Bo góc Card
+      ),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(15.0), // Bo góc InkWell
+        splashColor: color.withOpacity(0.3), // Màu hiệu ứng khi nhấn
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.0),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.8),
+                color.withOpacity(0.4),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 50.0,
+                  color: Colors.white, // Màu biểu tượng
+                ),
+                SizedBox(height: 10.0),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // Màu chữ
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

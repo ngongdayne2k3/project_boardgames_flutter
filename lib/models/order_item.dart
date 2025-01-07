@@ -1,29 +1,18 @@
-import 'order.dart';
-import 'product.dart';
-
 class OrderItem {
-  int? id;
-  Product? product;
-  int? quantity;
-  Order? order;
+  String productId;
+  String productName;
+  double price;
+  int quantity;
 
-  OrderItem({this.id, this.product, this.quantity, this.order});
+  OrderItem({
+    required this.productId,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+  });
 
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
-      id: json['id'],
-      product: json['product'] != null ? Product.fromJson(json['product']) : null,
-      quantity: json['quantity'],
-      order: json['order'] != null ? Order.fromJson(json['order']) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'product': product?.toJson(),
-      'quantity': quantity,
-      'order': order?.toJson(),
-    };
+  // Tính tổng giá của mục này
+  double getTotalPrice() {
+    return price * quantity;
   }
 }

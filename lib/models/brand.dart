@@ -1,8 +1,8 @@
-class Category {
+class Brand {
   String id;
   String name;
 
-  Category({
+  Brand({
     required this.id,
     required this.name
   });
@@ -14,15 +14,15 @@ class Category {
     };
   }
 
-  factory Category.fromMap(Map<String, dynamic> map) {
-    return Category(
+  factory Brand.fromMap(Map<String, dynamic> map) {
+    return Brand(
       id: map['id'],
       name: map['name'],
     );
   }
 
-  // Cập nhật thông tin danh mục
+  // Cập nhật thông tin thương hiệu
   void updateInfo({String? name}) {
     this.name = name ?? this.name;
-    }
+  }
 }
