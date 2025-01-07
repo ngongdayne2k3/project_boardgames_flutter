@@ -284,15 +284,14 @@ class DatabaseHelper {
   }
 
 // Thêm boardgame mới
-Future<void> insertBoardGame(BoardGame boardGame) async {
-  final db = await database;
-  await db.insert(
-    'boardgames',
-    boardGame.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}
-
+  Future<void> insertBoardGame(BoardGame boardGame) async {
+    final db = await database;
+    await db.insert(
+      'boardgames',
+      boardGame.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 // Lấy tất cả boardgames
 Future<List<BoardGame>> getAllBoardGames() async {
   final db = await database;
@@ -359,4 +358,23 @@ Future<List<Brand>> getAllBrands() async {
       whereArgs: [id],
     );
   }
+  Future<void> deleteOrder(String orderId) async {
+    final db = await database;
+
+    await db.delete(
+      'orders',
+      where: 'id = ?',
+      whereArgs: [orderId],
+    );
+
+    await db.delete(
+      'order_items',
+      where: 'orderId = ?',
+      whereArgs: [orderId],
+    );
+  }
+
 }
+
+
+

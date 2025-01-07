@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_boardgames_flutter/screens/admin/manage_order/manage_orders_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
@@ -146,7 +147,7 @@ class _MainScreenState extends State<MainScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AdminDashboardScreen()),
+                    MaterialPageRoute(builder: (context) => ManageOrdersScreen()),
                   );
                 },
               ),
@@ -158,7 +159,10 @@ class _MainScreenState extends State<MainScreen> {
                 label: 'Quản lý đơn hàng',
                 color: Colors.red,
                 onPressed: () {
-                  // Điều hướng đến màn hình quản lý đơn hàng
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ManageOrdersScreen()),
+                  );
                 },
               ),
           ],
