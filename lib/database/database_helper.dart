@@ -284,15 +284,14 @@ class DatabaseHelper {
   }
 
 // Thêm boardgame mới
-Future<void> insertBoardGame(BoardGame boardGame) async {
-  final db = await database;
-  await db.insert(
-    'boardgames',
-    boardGame.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}
-
+  Future<void> insertBoardGame(BoardGame boardGame) async {
+    final db = await database;
+    await db.insert(
+      'boardgames',
+      boardGame.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 // Lấy tất cả boardgames
 Future<List<BoardGame>> getAllBoardGames() async {
   final db = await database;

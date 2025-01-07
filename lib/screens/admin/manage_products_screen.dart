@@ -22,37 +22,79 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
   String? _selectedCategoryId;
   String? _selectedBrandId;
 
+  List<Category> _categories = [];
+  List<Brand> _brands = [];
+
   @override
   void initState() {
     super.initState();
     _loadProducts();
   }
-
-  Future<void> _loadProducts() async {
-    final products = await _dbHelper.getAllBoardGames();
+  Future<void> _loadCategories() async {
+    final categories = await _dbHelper.getAllCategories();
     setState(() {
-      _products = products;
+      _categories = categories;
+    });
+  }
+  Future<void> _loadBrands() async {
+    final brands = await _dbHelper.getAllBrands();
+    setState(() {
+      _brands = brands;
     });
   }
 
+  Future<void> _loadProducts() async {
+    try {
+      final products = await _dbHelper.getAllBoardGames();
+      setState(() {
+        _products = products;
+      });
+    } catch (e) {
+      print('Error loading products: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Có lỗi xảy ra khi tải danh sách sản phẩm: $e')),
+      );
+    }
+  }
+
   Future<void> _addProduct() async {
+    try{
     if (_formKey.currentState!.validate()) {
+      if (_selectedCategoryId == null || _selectedBrandId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Vui lòng chọn category và brand')),
+        );
+        return;
+      }
       final newProduct = BoardGame(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
-        category: Category(id: _selectedCategoryId!, name: ''),
-        brand: Brand(id: _selectedBrandId!, name: ''),
+        category: Category(id: _selectedCategoryId!, name: ''), // Đảm bảo _selectedCategoryId không null
+        brand: Brand(id: _selectedBrandId!, name: ''), // Đảm bảo _selectedBrandId không null
         price: double.parse(_priceController.text),
         stock: int.parse(_stockController.text),
         description: _descriptionController.text,
         imageUrl: _imageUrlController.text,
       );
+      print('Adding product: ${newProduct.toMap()}');
 
       await _dbHelper.insertBoardGame(newProduct);
-      _loadProducts();
-      _clearForm();
+      _loadProducts(); // Tải lại danh sách sản phẩm sau khi thêm
+      _clearForm(); // Xóa form sau khi thêm
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sản phẩm đã được thêm thành công')),
+      );
+
     }
+  }catch (e) {
+  // Xử lý lỗi nếu có
+  print('Error adding product: $e');
+  ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(content: Text('Có lỗi xảy ra khi thêm sản phẩm: $e')),
+  );
   }
+}
 
   Future<void> _editProduct(BoardGame product) async {
     _nameController.text = product.name;
@@ -125,7 +167,49 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
                       return null;
                     },
                   ),
-                  // Dropdown for categories and brands can be added here
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategoryId,
+                    hint: Text('Select Category'),
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category.id,
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategoryId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a category';
+                      }
+                      return null;
+                    },
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedBrandId,
+                    hint: Text('Select Brand'),
+                    items: _brands.map((brand) {
+                      return DropdownMenuItem(
+                        value: brand.id,
+                        child: Text(brand.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedBrandId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a brand';
+                      }
+                      return null;
+                    },
+                  ),
                 ],
               ),
             ),
@@ -279,7 +363,48 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
                                   return null;
                                 },
                               ),
-                              // Dropdown for categories and brands can be added here
+                              DropdownButtonFormField<String>(
+                                value: _selectedCategoryId,
+                                hint: Text('Select Category'),
+                                items: _categories.map((category) {
+                                  return DropdownMenuItem(
+                                    value: category.id,
+                                    child: Text(category.name),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedCategoryId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select a category';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              DropdownButtonFormField<String>(
+                                value: _selectedBrandId,
+                                hint: Text('Select Brand'),
+                                items: _brands.map((brand) {
+                                  return DropdownMenuItem(
+                                    value: brand.id,
+                                    child: Text(brand.name),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedBrandId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select a brand';
+                                  }
+                                  return null;
+                                },
+                              ),
                             ],
                           ),
                         ),
