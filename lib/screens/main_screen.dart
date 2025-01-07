@@ -3,9 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:project_boardgames_flutter/screens/auth/login_screen.dart';
 import 'package:project_boardgames_flutter/screens/product_list_screen.dart';
 import 'package:project_boardgames_flutter/screens/cart_screen.dart';
-
 import 'package:project_boardgames_flutter/models/cart.dart';
-
 import 'admin/admin_dashboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -113,7 +111,15 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProductListScreen(cart: _cart)),
+                  MaterialPageRoute(
+                    builder: (context) => ProductListScreen(
+                      cart: _cart,
+                      onProductSelected: (productDetails) {
+                        // Xử lý khi sản phẩm được chọn
+                        print('Sản phẩm được chọn: $productDetails');
+                      },
+                    ),
+                  ),
                 );
               },
             ),

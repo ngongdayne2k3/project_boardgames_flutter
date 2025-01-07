@@ -28,21 +28,30 @@ class MyApp extends StatelessWidget {
       ),
       // Định nghĩa các route
       routes: {
-        '/': (context) => MainScreen(),  // Route mặc định (Home)
+        '/': (context) => MainScreen(),
+        // Route mặc định (Home)
         '/login': (context) => LoginScreen(),
         '/signup': (context) => SignupScreen(),
-        '/product-list': (context) => ProductListScreen(cart: Cart()),  // Truyền Cart vào ProductListScreen
+        '/product-list': (context) => ProductListScreen(
+              cart: Cart(),
+              onProductSelected: (productDetails) {
+                // Xử lý khi sản phẩm được chọn
+                print('Sản phẩm được chọn: $productDetails');
+              },
+            ),
+        // Truyền Cart vào ProductListScreen
         '/product': (context) => ProductScreen(
-          imageUrl: '',  // Truyền các giá trị cần thiết
-          productName: '',
-          productDescription: '',
-          cart: Cart(),
-        ),
-        '/cart': (context) => CartScreen(cart: Cart()),  // Truyền Cart vào CartScreen
+              imageUrl: '', // Truyền các giá trị cần thiết
+              productName: '',
+              productDescription: '',
+              cart: Cart(),
+            ),
+        '/cart': (context) => CartScreen(cart: Cart()),
+        // Truyền Cart vào CartScreen
         '/profile': (context) => CustomerProfile(),
         '/manage-products': (context) => ManageProductsScreen(),
       },
-      initialRoute: '/',  // Route khởi đầu
+      initialRoute: '/', // Route khởi đầu
     );
   }
 }
