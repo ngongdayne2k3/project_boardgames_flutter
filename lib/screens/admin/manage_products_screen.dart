@@ -13,6 +13,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<BoardGame> _products = [];
   final _formKey = GlobalKey<FormState>();
+  final _idController = TextEditingController();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
@@ -70,7 +71,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
           return;
         }
         final newProduct = BoardGame(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: _idController.text,
           name: _nameController.text,
           category: Category(id: _selectedCategoryId!, name: ''),
           brand: Brand(id: _selectedBrandId!, name: ''),
@@ -115,6 +116,16 @@ class _ManageProductsScreenState extends State<ManageProductsScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  TextFormField(
+                    controller: _idController,
+                    decoration: InputDecoration(labelText: 'Id'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a id';
+                      }
+                      return null;
+                    },
+                  ),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(labelText: 'Name'),
