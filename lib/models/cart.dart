@@ -6,19 +6,14 @@ class Cart {
 
   // Thêm sản phẩm vào giỏ hàng
   void addItem(String productId, String productName, double price, int quantity) {
-    var existingItem = items.firstWhere(
-          (item) => item.productId == productId,
-      orElse: () => CartItemDTO(
-        productId: productId,
-        productName: productName,
-        price: price,
-        quantity: 0,
-      ),
-    );
+    // Tìm kiếm sản phẩm đã tồn tại trong giỏ hàng
+    var existingItemIndex = items.indexWhere((item) => item.productId == productId);
 
-    if (existingItem.quantity > 0) {
-      existingItem.quantity += quantity;  // Cập nhật số lượng nếu sản phẩm đã tồn tại
+    if (existingItemIndex != -1) {
+      // Nếu sản phẩm đã tồn tại, tăng số lượng lên 1
+      items[existingItemIndex].quantity += quantity;
     } else {
+      // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
       items.add(CartItemDTO(
         productId: productId,
         productName: productName,

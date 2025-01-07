@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart'; // Import DatabaseHelper
-import 'package:project_boardgames_flutter/models/cart.dart'; // Import model Cart
-import '../models/board_game.dart'; // Import model Product
-import '../models/cart_item.dart'; // Import model CartItem
+import '../database/database_helper.dart';
+import 'package:project_boardgames_flutter/models/cart.dart';
+import '../models/board_game.dart';
+import '../models/cart_item.dart';
+import 'product_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
-  final Cart cart; // Nhận Cart từ MainScreen
-  final Function(Map<String, dynamic>) onProductSelected; // Callback khi chọn sản phẩm
+  final Cart cart;
+  final Function(Map<String, dynamic>) onProductSelected;
 
-  ProductListScreen({required this.cart, required this.onProductSelected}); // Constructor nhận Cart và callback
+  ProductListScreen({required this.cart, required this.onProductSelected});
 
   @override
   _ProductListScreenState createState() => _ProductListScreenState();
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  List<BoardGame> _products = []; // Danh sách sản phẩm từ cơ sở dữ liệu
-  List<BoardGame> _filteredProducts = []; // Danh sách sản phẩm hiển thị
+  List<BoardGame> _products = [];
+  List<BoardGame> _filteredProducts = [];
   final TextEditingController _searchController = TextEditingController();
-  final DatabaseHelper _dbHelper = DatabaseHelper(); // Khởi tạo DatabaseHelper
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
   void initState() {
     super.initState();
-    _loadProducts(); // Tải danh sách sản phẩm từ cơ sở dữ liệu
+    _loadProducts();
     _searchController.addListener(_onSearchChanged);
   }
 
-  // Hàm tải danh sách sản phẩm từ cơ sở dữ liệu
   Future<void> _loadProducts() async {
     List<BoardGame> products = await _dbHelper.getAllBoardGames();
     setState(() {
@@ -36,7 +36,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
   }
 
-  // Hàm xử lý khi từ khóa tìm kiếm thay đổi
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -97,61 +96,81 @@ class _ProductListScreenState extends State<ProductListScreen> {
       }) {
     return GestureDetector(
       onTap: () {
-        widget.onProductSelected({
-          'title': product.name ?? 'Không có tên',
-          'price': product.price ?? 0,
-          'manufacturer': product.brand?.name ?? 'Không có nhà sản xuất',
-          'category': product.category?.name ?? 'Không có danh mục',
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductScreen(
+              imageUrl: product.imageUrl ?? '',
+              productName: product.name ?? 'Không có tên',
+              brand: product.brand?.name ?? 'Không có thương hiệu',
+              category: product.category?.name ?? 'Không có danh mục',
+              productDescription: product.description ?? 'Không có mô tả',
+              price: product.price ?? 0,
+              cart: widget.cart,
+            ),
+          ),
+        );
       },
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         elevation: 4,
         child: Padding(
           padding: EdgeInsets.all(12),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                product.name ?? 'Không có tên',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
+              if (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(product.imageUrl!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.image, color: Colors.grey[500]),
+                ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name ?? 'Không có tên',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Giá: ${product.price?.toString() ?? '0'} VND',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    SizedBox(height: 8),
+                  ],
+                ),
               ),
-              SizedBox(height: 8),
-              Text(
-                'Giá: ${product.price?.toString() ?? '0'} VND',
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Nhà sản xuất: ${product.brand?.name ?? 'Không có nhà sản xuất'}',
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Danh mục: ${product.category?.name ?? 'Không có danh mục'}',
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(height: 8),
               IconButton(
                 icon: Icon(Icons.add_shopping_cart),
                 onPressed: () {
-                  // Tạo một CartItem mới
-                  CartItem newItem = CartItem(
-                    product: product,
-                    quantity: 1, // Số lượng mặc định là 1
-                  );
-
-                  // Thêm sản phẩm vào giỏ hàng bằng cách sử dụng phương thức addItem của Cart
                   widget.cart.addItem(
-                    newItem.product.id ?? '', // productId
-                    newItem.product.name ?? 'Không có tên', // productName
-                    newItem.product.price ?? 0, // price
-                    newItem.quantity, // quantity
+                    product.id ?? '',
+                    product.name ?? 'Không có tên',
+                    product.price ?? 0,
+                    1,
                   );
 
-                  // Hiển thị thông báo
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Đã thêm ${product.name ?? "sản phẩm"} vào giỏ hàng!')),
                   );
