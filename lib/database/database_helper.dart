@@ -358,4 +358,23 @@ Future<List<Brand>> getAllBrands() async {
       whereArgs: [id],
     );
   }
+  Future<void> deleteOrder(String orderId) async {
+    final db = await database;
+
+    await db.delete(
+      'orders',
+      where: 'id = ?',
+      whereArgs: [orderId],
+    );
+
+    await db.delete(
+      'order_items',
+      where: 'orderId = ?',
+      whereArgs: [orderId],
+    );
+  }
+
 }
+
+
+
